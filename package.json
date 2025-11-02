@@ -1,5 +1,5 @@
 {
-  "name": "@solana/web3.js",
+  "name": "@xzwiex/web3.js",
   "version": "1.0.0-maintenance",
   "description": "Solana Javascript API",
   "keywords": [
@@ -44,7 +44,7 @@
     "clean": "rimraf ./doc ./declarations ./lib",
     "dev": "cross-env NODE_ENV=development rollup -c --watch",
     "prepublishOnly": "pnpm pkg delete devDependencies",
-    "publish-packages": "semantic-release --repository-url git@github.com:solana-foundation/solana-web3.js.git",
+    "publish-packages": "semantic-release --repository-url git@github.com:xzwiex/solana-web3.js.git",
     "test:lint": "eslint src/ test/ --ext .js,.ts",
     "test:lint:fix": "eslint src/ test/ --fix --ext .js,.ts",
     "test:live": "TEST_LIVE=1 pnpm run test:unit",
