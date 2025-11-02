@@ -7,6 +7,7 @@ import {isOnCurve} from './utils/ed25519';
 import {Struct, SOLANA_SCHEMA} from './utils/borsh-schema';
 import {toBuffer} from './utils/to-buffer';
 
+const bnCache = new Map<string, BN>();
 /**
  * Maximum length of derived pubkey seed
  */
@@ -49,6 +50,8 @@ export class PublicKey extends Struct {
   /** @internal */
   _bn: BN;
 
+  _bs58Value: string;
+
   /**
    * Create a new PublicKey object
    * @param value ed25519 public key as buffer or base-58 encoded string
@@ -57,22 +60,32 @@ export class PublicKey extends Struct {
     super({});
     if (isPublicKeyData(value)) {
       this._bn = value._bn;
+      this._bs58Value = bs58.encode(this.toBytes());
     } else {
       if (typeof value === 'string') {
         // assume base 58 encoding by default
-        const decoded = bs58.decode(value);
+        const cacheValue = bnCache.get(value);
+        if (cacheValue) {
+          this._bn = cacheValue;
+          this._bs58Value = value;
+          return;
+        }
+        const decoded = Buffer.from(bs58.decode(value));
         if (decoded.length != PUBLIC_KEY_LENGTH) {
           throw new Error(`Invalid public key input`);
         }
         this._bn = new BN(decoded);
+        this._bs58Value = value;
       } else {
         this._bn = new BN(value);
+        this._bs58Value = bs58.encode(this.toBytes());
       }
 
       if (this._bn.byteLength() > PUBLIC_KEY_LENGTH) {
         throw new Error(`Invalid public key input`);
       }
     }
+    bnCache.set(this._bs58Value, this._bn);
   }
 
   /**
@@ -101,7 +114,7 @@ export class PublicKey extends Struct {
    * Return the base-58 representation of the public key
    */
   toBase58(): string {
-    return bs58.encode(this.toBytes());
+    return this._bs58Value;
   }
 
   toJSON(): string {
